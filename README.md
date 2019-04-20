@@ -2,7 +2,7 @@
 
 Architect a Blockchain Supply Chain Solution - Part B.  Udacity Project, April 2019
 
-SEE THE DIAGRAMS HERE: https://github.com/stevenhankin/secure-cert-blockchain/wiki
+SEE THE DIAGRAMS HERE: https://github.com/stevenhankin/ethereum-dapp-supply-chain/wiki
 
 ### Overview
 This architecture is for a decentralized approach for certifaction schemes and certification issuance and verification.
@@ -10,6 +10,7 @@ Any party can become a Certifier and assign a suitable Authority that can delega
 
 ### Example Use Cases
 Here are 3 examples to illustrate how this could work:
+
 | Authority                         | Certifier                   | Recipient     | Inspector         |
 |-----------------------------------|-----------------------------|---------------|-------------------|
 |Specialty Coffee Association       |London School Of Coffee      |Trainee Barista| Starbucks Manager |
