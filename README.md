@@ -5,7 +5,7 @@ Architect a Blockchain Supply Chain Solution - Part B.  Udacity Project, April 2
 SEE THE DIAGRAMS HERE: https://github.com/stevenhankin/ethereum-dapp-supply-chain/wiki
 
 ### Overview
-This architecture is for a decentralized approach for certifaction schemes and certification issuance and verification.
+This DAPP is for a decentralized approach for certifcation schemes, issuance and verification.
 Any party can become a Certifier and assign a suitable Authority that can delegate authority of certification
 
 ### Example Use Cases
