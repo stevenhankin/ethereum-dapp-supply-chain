@@ -1,0 +1,25 @@
+{
+  "name": "ethereum-dapp-supply-chain",
+  "version": "1.0.0",
+  "description": "DAPP for decentralized certifcation schemes, issuance and verification",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevenhankin/ethereum-dapp-supply-chain.git"
+  },
+  "keywords": [
+    "Ethereum",
+    "DAPP",
+    "Udacity",
+    "Supply Chain"
+  ],
+  "author": "Steve Hankin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stevenhankin/ethereum-dapp-supply-chain/issues"
+  },
+  "homepage": "https://github.com/stevenhankin/ethereum-dapp-supply-chain#readme"
+}
