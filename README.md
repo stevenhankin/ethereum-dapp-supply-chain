@@ -18,3 +18,14 @@ Here are 3 examples to illustrate how this could work:
 |Oracle Corporation                 |Oracle Certified Professional|Database Admin | Deutsche Bank HR  |
 
 A Certifier would probably have a single Authority per Certificate.  Many certificates can be awarded from a scheme and potentially many "Inspectors" could request access to view one or more awarded certificates of a recipient
+
+
+
+## Setup Infura
+
+1) Login to [Infura](https://infura.io/dashboard)
+1) Create New Project (e.g. Ether-DAPP-Supply-Chain)
+1) View Project to get
+    * Project ID
+    * Project Secret
+    * EndPoint  ```Use Drop-Down to select Rinkeby ```

@@ -1,4 +1,4 @@
-pragma solidity 0.5.3;
+pragma solidity ^0.5.3;
 
 // Importing openzeppelin-solidity ERC-721 implemented Standard
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol";
@@ -15,8 +15,8 @@ contract SupplyChain is ERC721Full, ERC721Mintable {
     constructor() ERC721Full("SupplyChain Token", "SUP") public {
     }
 
-    function upgrade(address newContractAddress) public {};
-    function pause(address scheme) public {};
+    function upgrade(address newContractAddress) public {}
+    function pause(address scheme) public {}
 
     function createScheme(uint256 schemeId) public {}
     function endorseScheme(uint256 schemeId) public {}
