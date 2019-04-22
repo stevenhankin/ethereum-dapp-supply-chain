@@ -56,24 +56,27 @@ contract SupplyChain {
     }
 
     struct Certificate {
-        uint    certificateId; // Unique per certificate and a child of a scheme
+        uint certificateId; // Unique per certificate and a child of a scheme
+        uint schemeId; // Each certificate belongs to a single scheme
         CertificateState   certificateState;  // Product State as represented in the enum above
-        address payable recipientID; // Metamask-Ethereum address
-        address inspectorID; // Metamask-Ethereum address
+        address payable recipientID; // Metamask-Ethereum address of recipient who will pay for certificate
+//        uint    certificatePrice; // Price to be paid by recipient
+//        address inspectorID; // Metamask-Ethereum address
         mapping  (uint => Request) requests; // a certificate can have many view requests
+
     }
 
     struct Request {
-        uint    certificateId; // Unique per certificate and a child of a scheme
-        address ownerID;  // Metamask-Ethereum address of the current owner as the product moves through 9 stages
-        address originCertifierID; // Metamask-Ethereum address of the Certifier
-        string  originCertificateName; // Certifier Name
-        uint    productID;  // Potentially a combination of upc + sku
-        string  productNotes; // Product Notes
-        uint    productPrice; // Product Price
-        State   certificateState;  // Product State as represented in the enum above
-        address authorityID;  // Metamask-Ethereum address
-        address payable recipientID; // Metamask-Ethereum address
+        uint    certificateId; // Each request is for a specific certificate
+//        address ownerID;  // Metamask-Ethereum address of the current owner as the product moves through 9 stages
+//        address originCertifierID; // Metamask-Ethereum address of the Certifier
+//        string  originCertificateName; // Certifier Name
+//        uint    productID;  // Potentially a combination of upc + sku
+//        string  productNotes; // Product Notes
+//        uint    productPrice; // Product Price
+        RequestState   requestState;  // Product State as represented in the enum above
+//        address authorityID;  // Metamask-Ethereum address
+//        address payable recipientID; // Metamask-Ethereum address
         address inspectorID; // Metamask-Ethereum address
     }
 
