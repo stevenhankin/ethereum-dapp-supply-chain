@@ -10,7 +10,12 @@ contract SupplyChain {
     // Certifier that created the scheme will be initial owner
     // before being passed to the Authority
     address public owner;
-    string  public schemeName;
+
+    address authorityID;  // Metamask-Ethereum address
+    address originCertifierID; // Metamask-Ethereum address of the Certifier
+    string  originCertificateName; // Certifier Name
+
+    mapping(uint => Scheme) schemes;
 
     // Latest Certificate ID for certificates represented by contract
     uint  public certificateId;
@@ -18,29 +23,22 @@ contract SupplyChain {
     // Latest Request ID for requests represented by contract
     uint  public requestId;
 
-    // Public mapping of Scheme ID to Scheme
-    mapping  (uint => Scheme) schemes;
-
-//    // Define a public mapping 'certificatesHistory' that maps the UPC to an array of TxHash,
-//    // that track its journey through the supply chain -- to be sent from DApp.
-//    mapping  (uint => string[]) certificatesHistory;
-
     // States as documented in UML State Diagram documentation
     enum SchemeState {
-        Created,   // 0
-        Endorsed,   // 1
+        Created, // 0
+        Endorsed, // 1
         Invalidated // 2
     }
 
     enum CertificateState {
-        Certified,  // 0
+        Certified, // 0
         Revoked    // 1
     }
 
     enum RequestState {
-        Requested,  // 0
-        Approved,   // 1
-        Denied,     // 2
+        Requested, // 0
+        Approved, // 1
+        Denied, // 2
         Viewed      // 3
     }
 
@@ -48,49 +46,36 @@ contract SupplyChain {
 
     struct Scheme {
         uint schemeId;
+        string schemeName;
         SchemeState schemeState;
-        address authorityID;  // Metamask-Ethereum address
-        address originCertifierID; // Metamask-Ethereum address of the Certifier
-        string  originCertificateName; // Certifier Name
-        mapping  (uint => Certificate) certificates; // a scheme can have many certificates
+        mapping(uint => Certificate) certificates; // a scheme can have many certificates
     }
 
     struct Certificate {
         uint certificateId; // Unique per certificate and a child of a scheme
-        uint schemeId; // Each certificate belongs to a single scheme
-        CertificateState   certificateState;  // Product State as represented in the enum above
+        CertificateState certificateState;  // Product State as represented in the enum above
         address payable recipientID; // Metamask-Ethereum address of recipient who will pay for certificate
-//        uint    certificatePrice; // Price to be paid by recipient
-//        address inspectorID; // Metamask-Ethereum address
-        mapping  (uint => Request) requests; // a certificate can have many view requests
-
+        mapping(uint => Request) requests; // a certificate can have many view requests
     }
 
     struct Request {
-        uint    certificateId; // Each request is for a specific certificate
-//        address ownerID;  // Metamask-Ethereum address of the current owner as the product moves through 9 stages
-//        address originCertifierID; // Metamask-Ethereum address of the Certifier
-//        string  originCertificateName; // Certifier Name
-//        uint    productID;  // Potentially a combination of upc + sku
-//        string  productNotes; // Product Notes
-//        uint    productPrice; // Product Price
-        RequestState   requestState;  // Product State as represented in the enum above
-//        address authorityID;  // Metamask-Ethereum address
-//        address payable recipientID; // Metamask-Ethereum address
+        uint requestId;
+        RequestState requestState;  // Product State as represented in the enum above
         address inspectorID; // Metamask-Ethereum address
     }
 
-
-    // 9 events with the same 8 state values and accept 'upc' as input argument
+    // 9 events with the same 9 state values and accept IDs as input argument
     event Created(uint schemeId);
     event Endorsed(uint schemeId);
-    event Certified(uint upc);
-    event Requested(uint upc);
-    event Approved(uint upc);
-    event Denied(uint upc);
-    event Viewed(uint upc);
-    event Revoked(uint upc);
-    event Invalidated (uint upc);
+    event Invalidated (uint schemeId);
+
+    event Certified(uint certificateId);
+    event Revoked(uint certificateId);
+
+    event Requested(uint requestId);
+    event Approved(uint requestId);
+    event Denied(uint requestId);
+    event Viewed(uint requestId);
 
     // Define a modifier that checks to see if msg.sender == owner of the contract
     modifier onlyOwner() {
@@ -105,21 +90,51 @@ contract SupplyChain {
     }
 
     // Define a modifier that checks if the paid amount is sufficient to cover the price
-    modifier paidEnough(uint _price) {
-        require(msg.value >= _price);
-        _;
-    }
+    //    modifier paidEnough(uint _price) {
+    //        require(msg.value >= _price);
+    //        _;
+    //    }
 
     // Define a modifier that checks the price and refunds the remaining balance
-    modifier checkValue(uint _upc) {
+    //    modifier checkValue(uint _upc) {
+    //        _;
+    //        uint _price = certificates[_upc].productPrice;
+    //        uint amountToReturn = msg.value - _price;
+    //        certificates[_upc].recipientID.transfer(amountToReturn);
+    //    }
+
+    // Modifier to assert scheme state
+    modifier created(uint _schemeId) {
+        require(schemes[_schemeId].schemeState == SchemeState.Created);
         _;
-        uint _price = certificates[_upc].productPrice;
-        uint amountToReturn = msg.value - _price;
-        certificates[_upc].recipientID.transfer(amountToReturn);
+    }
+    // Modifier to assert scheme state
+    modifier endorsed(uint _schemeId) {
+        require(schemes[_schemeId].schemeState == SchemeState.Endorsed);
+        _;
+    }
+    // Modifier to assert scheme state
+    modifier invalidated(uint _schemeId) {
+        require(schemes[_schemeId].schemeState == SchemeState.Invalidated);
+        _;
     }
 
-    modifier created(uint _upc) {
-        require(certificates[_upc].certificateState == State.Created);
+    // Modifier to assert certificate state
+    modifier certified(uint _schemeId, uint _certificateId) {
+        require(schemes[_schemeId].certificates[_certificateId].certificateState == CertificateState.Certified);
+        _;
+    }
+    // Modifier to assert certificate state
+    modifier revoked(uint _schemeId, uint _certificateId) {
+        require(schemes[_schemeId].certificates[_certificateId].certificateState == CertificateState.Revoked);
+        _;
+    }
+
+    // Modifier to assert request state
+    modifier requested(uint _schemeId, uint _certificateId, uint _requestId) {
+        require(schemes[_schemeId]
+                    .certificates[_certificateId]
+                    .requests[_requestId].requestState == RequestState.Requested);
         _;
     }
 
@@ -129,28 +144,35 @@ contract SupplyChain {
     constructor() public payable {
         owner = msg.sender;
         // Start all IDs from 1 when contract is created
-        schemeId = 1;
+        //        schemeId = 1;
         certificateId = 1;
         requestId = 1;
     }
 
+
     // Not sure if required
-//    function kill() public {
-//        if (msg.sender == owner) {
-//            selfdestruct(owner);
-//        }
-//    }
+    //    function kill() public {
+    //        if (msg.sender == owner) {
+    //            selfdestruct(owner);
+    //        }
+    //    }
 
     function createScheme(uint _schemeId, string memory _schemeName) public {
-        sku++;
+        schemes[_schemeId].schemeState = DEFAULT_STATE;
+        schemes[_schemeId].schemeName = _schemeName;
+        emit Created(_schemeId);
     }
 
-    function endorseScheme(uint schemeId) public {}
-    function createCertificate(uint certificateId, string memory certificateName) public {}
-    function requestAccess(uint accessId) public {}
-    function decideAccess(uint accessId, bool canAccess) public {}
-    function viewCertificate(uint certificateId) public {}
-    function revokeCertificate(uint certificateId) public {}
-    function invalidateScheme(uint schemeId) public {}
+    function endorseScheme(uint _schemeId) public created(_schemeId) {
+        schemes[_schemeId].schemeState = SchemeState.Endorsed;
+        emit Endorsed(_schemeId);
+    }
+
+    //    function createCertificate(uint certificateId, string memory certificateName) public {}
+    //    function requestAccess(uint accessId) public {}
+    //    function decideAccess(uint accessId, bool canAccess) public {}
+    //    function viewCertificate(uint certificateId) public {}
+    //    function revokeCertificate(uint certificateId) public {}
+    //    function invalidateScheme(uint schemeId) public {}
 
 }
