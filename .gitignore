@@ -3,3 +3,5 @@ node_modules/
 ethereum-dapp-supply-chain.iml
 *~
 build/
+.secret
+client/src/contracts/

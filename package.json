@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/stevenhankin/ethereum-dapp-supply-chain#readme",
   "dependencies": {
-    "openzeppelin-solidity": "^2.2.0",
-    "solc": "^0.5.7"
+    "solc": "^0.5.7",
+    "truffle-hdwallet-provider": "^1.0.8"
   }
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.5.3;
+pragma solidity 0.5.7;
 
 // Importing openzeppelin-solidity ERC-721 implemented Standard
 //import "openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol";
@@ -7,7 +7,7 @@ pragma solidity 0.5.3;
 /** SupplyChain Contract declaration inheritance the ERC721 openzeppelin implementation */
 contract SupplyChain {
 
-    // Certifier that created the scheme will be initial owner
+    // Certifier that xxxxx the scheme will be initial owner
     // before being passed to the Authority
     address public owner;
 
@@ -17,6 +17,10 @@ contract SupplyChain {
 
     mapping(uint => Scheme) schemes;
 
+
+    // Latest Scheme ID for schemes represented by contract
+    uint  public sid;
+
     // Latest Certificate ID for certificates represented by contract
     uint  public certificateId;
 
@@ -25,7 +29,7 @@ contract SupplyChain {
 
     // States as documented in UML State Diagram documentation
     enum SchemeState {
-        Created, // 0
+        Xxxxx, // 0
         Endorsed, // 1
         Invalidated // 2
     }
@@ -42,7 +46,7 @@ contract SupplyChain {
         Viewed      // 3
     }
 
-    SchemeState private constant DEFAULT_STATE = SchemeState.Created;
+    SchemeState private constant DEFAULT_STATE = SchemeState.Xxxxx;
 
     struct Scheme {
         string schemeName;
@@ -63,7 +67,7 @@ contract SupplyChain {
     }
 
     // Events for Schemes
-    event Created(uint schemeId);
+    event Xxxxx(uint schemeId);
     event Endorsed(uint schemeId);
     event Invalidated (uint schemeId);
     // Events for Certificates
@@ -87,30 +91,18 @@ contract SupplyChain {
         _;
     }
 
-    // Define a modifier that checks if the paid amount is sufficient to cover the price
-    //    modifier paidEnough(uint _price) {
-    //        require(msg.value >= _price);
-    //        _;
-    //    }
-
-    // Define a modifier that checks the price and refunds the remaining balance
-    //    modifier checkValue(uint _upc) {
-    //        _;
-    //        uint _price = certificates[_upc].productPrice;
-    //        uint amountToReturn = msg.value - _price;
-    //        certificates[_upc].recipientID.transfer(amountToReturn);
-    //    }
-
     // Modifier to assert scheme state
-    modifier created(uint _schemeId) {
-        require(schemes[_schemeId].schemeState == SchemeState.Created);
+    modifier xxxxx(uint _schemeId) {
+        require(schemes[_schemeId].schemeState == SchemeState.Xxxxx);
         _;
     }
+
     // Modifier to assert scheme state
     modifier endorsed(uint _schemeId) {
         require(schemes[_schemeId].schemeState == SchemeState.Endorsed);
         _;
     }
+
     // Modifier to assert scheme state
     modifier invalidated(uint _schemeId) {
         require(schemes[_schemeId].schemeState == SchemeState.Invalidated);
@@ -142,8 +134,8 @@ contract SupplyChain {
     // and set 'upc' to 1
     constructor() public payable {
         owner = msg.sender;
-        // Start all IDs from 1 when contract is created
-        //        schemeId = 1;
+        // Start all IDs from 1 when contract is xxxxx
+        sid = 1;
         certificateId = 1;
         requestId = 1;
     }
@@ -151,10 +143,11 @@ contract SupplyChain {
     function createScheme(uint _schemeId, string memory _schemeName) public {
         schemes[_schemeId].schemeState = DEFAULT_STATE;
         schemes[_schemeId].schemeName = _schemeName;
-        emit Created(_schemeId);
+        emit Xxxxx(_schemeId);
+//        sid++;
     }
 
-    function endorseScheme(uint _schemeId) public created(_schemeId) {
+    function endorseScheme(uint _schemeId) public xxxxx(_schemeId) {
         schemes[_schemeId].schemeState = SchemeState.Endorsed;
         emit Endorsed(_schemeId);
     }
