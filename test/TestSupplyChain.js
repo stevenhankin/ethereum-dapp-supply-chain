@@ -2,36 +2,51 @@
 const SupplyChain = artifacts.require('SupplyChain');
 
 let accounts;
-let owner;
+let from;
+let recipient;
 
-console.log('Creating contract...');
-
-contract('SupplyChain', (accs) => {
+contract('SupplyChain', async (accs) => {
     accounts = accs;
-    owner = accounts[0];
+    from = accounts[0];
+    recipient = accounts[1];
 });
 
 
+it('cannot create a Scheme with no name', async () => {
+    try {
+        let instance = await SupplyChain.deployed();
+        await instance.createScheme("", {from});
+        assert.fail("The transaction should have thrown an error");
+    } catch (e) {
+        console.log("Correctly failed")
+    }
+});
 
-console.log('Running tests...');
 
-it('can Create a Scheme', async () => {
-    // let schemeId = 1;
+it('can create a Scheme and emit correct event', async () => {
     let schemeName = 'myScheme';
-    let from = accounts[0];
     let instance = await SupplyChain.deployed();
-    console.log('account', {from});
-    await instance.createScheme(schemeName, {from});
-    // await instance.createScheme(schemeId, schemeName, {from});
-    // assert.equal(await instance.tokenIdToStarInfo.call(tokenId), 'Awesome Star!')
-    assert.strictEqual(1,1);
+    let {logs} = await instance.createScheme(schemeName, {from});
+    let {event} = logs[0];
+    assert.strictEqual(event, 'Created');
 });
 
+it('can endorse a Scheme and emit correct event', async () => {
+    let schemeName = 'myScheme';
+    let instance = await SupplyChain.deployed();
+    await instance.createScheme(schemeName, {from});
+    let {logs} = await instance.endorseScheme(1);
+    let {event} = logs[0];
+    assert.strictEqual(event, 'Endorsed');
+});
 
-/*
-function createScheme(uint _schemeId, string memory _schemeName) public {
-    schemes[_schemeId].schemeState = DEFAULT_STATE;
-    schemes[_schemeId].schemeName = _schemeName;
-    emit Created(_schemeId);
-}
-*/
+// it('can certify a Recipient and emit correct event', async () => {
+//     let schemeName = 'myScheme';
+//     let instance = await SupplyChain.deployed();
+//     await instance.createScheme(schemeName, {from});
+//     await instance.endorseScheme(1);
+//     let {logs} = await instance.createCertificate(999,'testName',recipient);
+//     console.log({logs})
+//     let {event} = logs[0];
+//     assert.strictEqual(event, 'Certified');
+// });

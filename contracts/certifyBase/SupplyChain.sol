@@ -7,7 +7,7 @@ pragma solidity 0.5.7;
 /** SupplyChain Contract declaration inheritance the ERC721 openzeppelin implementation */
 contract SupplyChain {
 
-    // Certifier that xxxxx the scheme will be initial owner
+    // Certifier that created the scheme will be initial owner
     // before being passed to the Authority
     address public owner;
 
@@ -19,7 +19,7 @@ contract SupplyChain {
 
 
     // Latest Scheme ID for schemes represented by contract
-    uint  public sid;
+    uint  public schemeId;
 
     // Latest Certificate ID for certificates represented by contract
     uint  public certificateId;
@@ -29,7 +29,7 @@ contract SupplyChain {
 
     // States as documented in UML State Diagram documentation
     enum SchemeState {
-        Xxxxx, // 0
+        Created, // 0
         Endorsed, // 1
         Invalidated // 2
     }
@@ -46,7 +46,7 @@ contract SupplyChain {
         Viewed      // 3
     }
 
-    SchemeState private constant DEFAULT_STATE = SchemeState.Xxxxx;
+    SchemeState private constant DEFAULT_STATE = SchemeState.Created;
 
     struct Scheme {
         string schemeName;
@@ -67,7 +67,7 @@ contract SupplyChain {
     }
 
     // Events for Schemes
-    event Xxxxx(uint schemeId);
+    event Created(uint schemeId);
     event Endorsed(uint schemeId);
     event Invalidated (uint schemeId);
     // Events for Certificates
@@ -92,14 +92,14 @@ contract SupplyChain {
     }
 
     // Modifier to assert scheme state
-    modifier xxxxx(uint _schemeId) {
-        require(schemes[_schemeId].schemeState == SchemeState.Xxxxx);
+    modifier created(uint _schemeId) {
+        require(schemes[_schemeId].schemeState == SchemeState.Created);
         _;
     }
 
     // Modifier to assert scheme state
     modifier endorsed(uint _schemeId) {
-        require(schemes[_schemeId].schemeState == SchemeState.Endorsed);
+        require(schemes[_schemeId].schemeState == SchemeState.Endorsed, "Scheme should be Endorsed");
         _;
     }
 
@@ -134,30 +134,34 @@ contract SupplyChain {
     // and set 'upc' to 1
     constructor() public payable {
         owner = msg.sender;
-        // Start all IDs from 1 when contract is xxxxx
-        sid = 1;
+        // Start all IDs from 1 when contract is created
+        schemeId = 1;
         certificateId = 1;
         requestId = 1;
     }
 
-    function createScheme(uint _schemeId, string memory _schemeName) public {
-        schemes[_schemeId].schemeState = DEFAULT_STATE;
-        schemes[_schemeId].schemeName = _schemeName;
-        emit Xxxxx(_schemeId);
-//        sid++;
+    function createScheme(string memory _schemeName) public {
+        assert(bytes(_schemeName).length != 0);
+        schemes[schemeId].schemeState = DEFAULT_STATE;
+        schemes[schemeId].schemeName = _schemeName;
+        emit Created(schemeId);
+        schemeId++;
     }
 
-    function endorseScheme(uint _schemeId) public xxxxx(_schemeId) {
+    function endorseScheme(uint _schemeId) public created(_schemeId) {
+        assert(_schemeId != 0);
         schemes[_schemeId].schemeState = SchemeState.Endorsed;
         emit Endorsed(_schemeId);
     }
 
     // The certifier awards a certificate to a recipient
-    function createCertificate(uint _schemeId, uint _certificateId, string memory _certificateName, address payable _recipientID) public {
-        schemes[_schemeId].certificates[_certificateId].certificateName = _certificateName;
-        schemes[_schemeId].certificates[_certificateId].certificateState = CertificateState.Certified;
-        schemes[_schemeId].certificates[_certificateId].recipientID = _recipientID;
-        emit Certified(_certificateId);
+    function createCertificate(uint _schemeId, string memory _certificateName, address payable _recipientID) public endorsed(_schemeId) {
+        assert(bytes(_certificateName).length != 0);
+        schemes[_schemeId].certificates[certificateId].certificateName = _certificateName;
+        schemes[_schemeId].certificates[certificateId].certificateState = CertificateState.Certified;
+        schemes[_schemeId].certificates[certificateId].recipientID = _recipientID;
+        emit Certified(certificateId);
+        certificateId++;
     }
 
     function requestAccess(uint _schemeId, uint _certificateId, uint _requestId, address _inspectorID) public {
