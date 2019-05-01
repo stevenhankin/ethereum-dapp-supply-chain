@@ -9,7 +9,7 @@ contract SupplyChain {
 
     // Certifier that created the scheme will be initial owner
     // before being passed to the Authority
-    address public owner;
+    address payable public owner;
 
     address authorityID;  // Metamask-Ethereum address
     address originCertifierID; // Metamask-Ethereum address of the Certifier
@@ -93,31 +93,31 @@ contract SupplyChain {
 
     // Modifier to assert scheme state
     modifier created(uint _schemeId) {
-        require(schemes[_schemeId].schemeState == SchemeState.Created);
+        require(schemes[_schemeId].schemeState == SchemeState.Created, "Scheme has not been Created");
         _;
     }
 
     // Modifier to assert scheme state
     modifier endorsed(uint _schemeId) {
-        require(schemes[_schemeId].schemeState == SchemeState.Endorsed, "Scheme should be Endorsed");
+        require(schemes[_schemeId].schemeState == SchemeState.Endorsed, "Scheme is not Endorsed");
         _;
     }
 
     // Modifier to assert scheme state
     modifier invalidated(uint _schemeId) {
-        require(schemes[_schemeId].schemeState == SchemeState.Invalidated);
+        require(schemes[_schemeId].schemeState == SchemeState.Invalidated, "Scheme is not Invalidated");
         _;
     }
 
     // Modifier to assert certificate state
     modifier certified(uint _schemeId, uint _certificateId) {
-        require(schemes[_schemeId].certificates[_certificateId].certificateState == CertificateState.Certified);
+        require(schemes[_schemeId].certificates[_certificateId].certificateState == CertificateState.Certified, "Scheme is not Certified");
         _;
     }
 
     // Modifier to assert certificate state
     modifier revoked(uint _schemeId, uint _certificateId) {
-        require(schemes[_schemeId].certificates[_certificateId].certificateState == CertificateState.Revoked);
+        require(schemes[_schemeId].certificates[_certificateId].certificateState == CertificateState.Revoked, "Scheme is not Revoked");
         _;
     }
 
@@ -138,6 +138,10 @@ contract SupplyChain {
         schemeId = 1;
         certificateId = 1;
         requestId = 1;
+    }
+
+    function close() public onlyOwner {
+        selfdestruct(owner);
     }
 
     function createScheme(string memory _schemeName) public {
