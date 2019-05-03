@@ -8,14 +8,15 @@ pragma solidity 0.5.7;
 contract SupplyChain {
 
     // Certifier that created the scheme will be initial owner
-    // before being passed to the Authority
     address payable public owner;
 
-    address authorityID;  // Metamask-Ethereum address
-    address originCertifierID; // Metamask-Ethereum address of the Certifier
-    string  originCertificateName; // Certifier Name
+//    address authorityId;  // Metamask-Ethereum address
+//    address originCertifierID; // Metamask-Ethereum address of the Certifier
+//    string  originCertificateName; // Certifier Name
 
     mapping(uint32 => Scheme) schemes;
+    mapping(uint32 => Certificate) certificates;
+    mapping(uint32 => Request) requests;
 
 
     // Latest Scheme ID for schemes represented by contract
@@ -51,18 +52,18 @@ contract SupplyChain {
     struct Scheme {
         string schemeName;
         SchemeState schemeState;
-        mapping(uint32 => Certificate) certificates; // a scheme can have many certificates
     }
 
     struct Certificate {
         CertificateState certificateState;  // Product State as represented in the enum above
-        address payable recipientID; // Metamask-Ethereum address of recipient who will pay for certificate
-        mapping(uint32 => Request) requests; // a certificate can have many view requests
+        address payable recipientId; // Metamask-Ethereum address of recipient who will pay for certificate
+        uint schemeId; // Scheme that this certificate belongs to
     }
 
     struct Request {
         RequestState requestState;  // Product State as represented in the enum above
-        address inspectorID; // Metamask-Ethereum address
+        address inspectorId; // Metamask-Ethereum address
+        uint32 certificateId; // Certificate that this Request is referencing
     }
 
     // Events for Schemes
@@ -73,7 +74,7 @@ contract SupplyChain {
     event Certified(uint32 certificateId, address recipientId);
     event Revoked(uint32 certificateId);
     // Events for Requests
-    event Requested(uint32 schemeId, uint32 certificateId, uint32 requestId);
+    event Requested(uint32 certificateId, uint32 requestId);
     event Approved(uint32 requestId);
     event Denied(uint32 requestId);
     event Viewed(uint32 requestId);
@@ -109,22 +110,20 @@ contract SupplyChain {
     }
 
     // Modifier to assert certificate state
-    modifier certified(uint32 _schemeId, uint32 _certificateId) {
-        require(schemes[_schemeId].certificates[_certificateId].certificateState == CertificateState.Certified, "Scheme is not Certified");
+    modifier certified(uint32 _certificateId) {
+        require(certificates[_certificateId].certificateState == CertificateState.Certified, "Scheme is not Certified");
         _;
     }
 
     // Modifier to assert certificate state
-    modifier revoked(uint32 _schemeId, uint32 _certificateId) {
-        require(schemes[_schemeId].certificates[_certificateId].certificateState == CertificateState.Revoked, "Scheme is not Revoked");
+    modifier revoked(uint32 _certificateId) {
+        require(certificates[_certificateId].certificateState == CertificateState.Revoked, "Scheme is not Revoked");
         _;
     }
 
     // Modifier to assert request state
-    modifier requested(uint32 _schemeId, uint32 _certificateId, uint32 _requestId) {
-        require(schemes[_schemeId]
-        .certificates[_certificateId]
-        .requests[_requestId].requestState == RequestState.Requested);
+    modifier requested(uint32 _requestId) {
+        require(requests[_requestId].requestState == RequestState.Requested);
         _;
     }
 
@@ -158,38 +157,40 @@ contract SupplyChain {
     }
 
     // The certifier awards a certificate to a recipient
-    function awardCertificate(uint32 _schemeId, address payable _recipientID) public endorsed(_schemeId) {
+    function awardCertificate(uint32 _schemeId, address payable _recipientId) public endorsed(_schemeId) {
         assert(_schemeId != 0);
-        schemes[_schemeId].certificates[certificateId].certificateState = CertificateState.Certified;
-        schemes[_schemeId].certificates[certificateId].recipientID = _recipientID;
-        emit Certified(certificateId, _recipientID);
+        certificates[certificateId].certificateState = CertificateState.Certified;
+        certificates[certificateId].recipientId = _recipientId;
+        certificates[certificateId].schemeId = _schemeId;
+        emit Certified(certificateId, _recipientId);
         certificateId++;
     }
 
-    function requestAccess(uint32 _schemeId, uint32 _certificateId, address _inspectorID) public {
-        schemes[_schemeId].certificates[_certificateId].requests[requestId].requestState = RequestState.Requested;
-        schemes[_schemeId].certificates[_certificateId].requests[requestId].inspectorID = _inspectorID;
-        emit Requested(_schemeId, _certificateId, requestId);
+    function requestAccess(uint32 _certificateId, address _inspectorId) public {
+        requests[requestId].requestState = RequestState.Requested;
+        requests[requestId].inspectorId = _inspectorId;
+        requests[requestId].certificateId = _certificateId;
+        emit Requested(_certificateId, requestId);
         requestId++;
     }
 
-    function decideAccess(uint32 _schemeId, uint32 _certificateId, uint32 _requestId, bool _canAccess) public {
+    function decideAccess( uint32 _requestId, bool _canAccess) public {
         if (_canAccess) {
-            schemes[_schemeId].certificates[_certificateId].requests[_requestId].requestState = RequestState.Approved;
+            requests[_requestId].requestState = RequestState.Approved;
             emit Approved(_requestId);
         } else {
-            schemes[_schemeId].certificates[_certificateId].requests[_requestId].requestState = RequestState.Denied;
+            requests[_requestId].requestState = RequestState.Denied;
             emit Denied(_requestId);
         }
     }
 
-    function viewCertificate(uint32 _schemeId, uint32 _certificateId, uint32 _requestId) public {
-        schemes[_schemeId].certificates[_certificateId].requests[_requestId].requestState = RequestState.Viewed;
-        emit Viewed(_certificateId);
+    function viewCertificate(uint32 _requestId) public {
+        requests[_requestId].requestState = RequestState.Viewed;
+        emit Viewed(requests[_requestId].certificateId);
     }
 
-    function revokeCertificate(uint32 _schemeId, uint32 _certificateId) public {
-        schemes[_schemeId].certificates[_certificateId].certificateState = CertificateState.Revoked;
+    function revokeCertificate(uint32 _certificateId) public {
+        certificates[_certificateId].certificateState = CertificateState.Revoked;
         emit Revoked(_certificateId);
     }
 
