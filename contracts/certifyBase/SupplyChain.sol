@@ -10,9 +10,9 @@ contract SupplyChain {
     // Certifier that created the scheme will be initial owner
     address payable public owner;
 
-//    address authorityId;  // Metamask-Ethereum address
-//    address originCertifierID; // Metamask-Ethereum address of the Certifier
-//    string  originCertificateName; // Certifier Name
+    //    address authorityId;  // Metamask-Ethereum address
+    //    address originCertifierID; // Metamask-Ethereum address of the Certifier
+    //    string  originCertificateName; // Certifier Name
 
     mapping(uint32 => Scheme) schemes;
     mapping(uint32 => Certificate) certificates;
@@ -56,14 +56,14 @@ contract SupplyChain {
 
     struct Certificate {
         CertificateState certificateState;  // Product State as represented in the enum above
-        address payable recipientId; // Metamask-Ethereum address of recipient who will pay for certificate
-        uint schemeId; // Scheme that this certificate belongs to
+        address payable recipientId;        // Metamask-Ethereum address of recipient who will pay for certificate
+        uint schemeId;                      // Scheme that this certificate belongs to
     }
 
     struct Request {
         RequestState requestState;  // Product State as represented in the enum above
-        address inspectorId; // Metamask-Ethereum address
-        uint32 certificateId; // Certificate that this Request is referencing
+        address inspectorId;        // Metamask-Ethereum address
+        uint32 certificateId;       // Certificate that this Request is referencing
     }
 
     // Events for Schemes
@@ -85,6 +85,13 @@ contract SupplyChain {
         _;
     }
 
+    // Only the Inspector can view the certificate
+    modifier onlyRequestor(uint32 _requestId) {
+        require(msg.sender == requests[_requestId].inspectorId,
+                    "Only the address that requested access can view the certificate");
+        _;
+    }
+
     // Define a modifier that verifies the Caller
     modifier verifyCaller (address _address) {
         require(msg.sender == _address);
@@ -103,11 +110,6 @@ contract SupplyChain {
         _;
     }
 
-    // Modifier to assert scheme state
-    modifier invalidated(uint32 _schemeId) {
-        require(schemes[_schemeId].schemeState == SchemeState.Invalidated, "Scheme is not Invalidated");
-        _;
-    }
 
     // Modifier to assert certificate state
     modifier certified(uint32 _certificateId) {
@@ -127,9 +129,13 @@ contract SupplyChain {
         _;
     }
 
-    // In the constructor set 'owner' to the address that instantiated the contract
-    // and set 'sku' to 1
-    // and set 'upc' to 1
+    // Modifier to assert request state
+    modifier approved(uint32 _requestId) {
+        require(requests[_requestId].requestState == RequestState.Approved);
+        _;
+    }
+
+    // In the constructor set 'owner' to the address that instantiated the contract (i.e. the certifier)
     constructor() public payable {
         owner = msg.sender;
         // Start all IDs from 1 when contract is created
@@ -138,6 +144,7 @@ contract SupplyChain {
         requestId = 1;
     }
 
+    // Certifier can destroy the contract
     function close() public onlyOwner {
         selfdestruct(owner);
     }
@@ -150,6 +157,7 @@ contract SupplyChain {
         schemeId++;
     }
 
+    // An authority officially endorsed the certification scheme as approved
     function endorseScheme(uint32 _schemeId) public created(_schemeId) {
         assert(_schemeId != 0);
         schemes[_schemeId].schemeState = SchemeState.Endorsed;
@@ -166,15 +174,18 @@ contract SupplyChain {
         certificateId++;
     }
 
-    function requestAccess(uint32 _certificateId, address _inspectorId) public {
+    // An inspector has request access to view a Recipient's certification
+    function requestAccess(uint32 _certificateId) public {
         requests[requestId].requestState = RequestState.Requested;
-        requests[requestId].inspectorId = _inspectorId;
+        requests[requestId].inspectorId = msg.sender;
         requests[requestId].certificateId = _certificateId;
         emit Requested(_certificateId, requestId);
         requestId++;
     }
 
-    function decideAccess( uint32 _requestId, bool _canAccess) public {
+    // A recipient decides whether or not to approve access to their certificate
+    // from a data protection perspective
+    function decideAccess(uint32 _requestId, bool _canAccess) public {
         if (_canAccess) {
             requests[_requestId].requestState = RequestState.Approved;
             emit Approved(_requestId);
@@ -184,17 +195,20 @@ contract SupplyChain {
         }
     }
 
-    function viewCertificate(uint32 _requestId) public {
+    // An inspector has viewed a certificate that has had access approved
+    function viewCertificate(uint32 _requestId) public approved(_requestId) onlyRequestor(_requestId) {
         requests[_requestId].requestState = RequestState.Viewed;
-        emit Viewed(requests[_requestId].certificateId);
+        emit Viewed(_requestId);
     }
 
-    function revokeCertificate(uint32 _certificateId) public {
+    // A certifier has revoked a recipient's certificate (perhaps they cheated during an exam!)
+    function revokeCertificate(uint32 _certificateId) public onlyOwner() {
         certificates[_certificateId].certificateState = CertificateState.Revoked;
         emit Revoked(_certificateId);
     }
 
-    function invalidateScheme(uint32 _schemeId) public {
+    // Scheme is invalidated to end the scheme
+    function invalidateScheme(uint32 _schemeId) public onlyOwner() {
         schemes[_schemeId].schemeState = SchemeState.Invalidated;
         emit Invalidated(_schemeId);
     }
