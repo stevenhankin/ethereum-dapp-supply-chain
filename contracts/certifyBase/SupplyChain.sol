@@ -1,8 +1,5 @@
 pragma solidity 0.5.7;
 
-// Importing openzeppelin-solidity ERC-721 implemented Standard
-//import "openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol";
-//import "openzeppelin-solidity/contracts/token/ERC721/ERC721Full.sol";
 
 /** SupplyChain Contract declaration inheritance the ERC721 openzeppelin implementation */
 contract SupplyChain {
@@ -10,14 +7,9 @@ contract SupplyChain {
     // Certifier that created the scheme will be initial owner
     address payable public owner;
 
-    //    address authorityId;  // Metamask-Ethereum address
-    //    address originCertifierID; // Metamask-Ethereum address of the Certifier
-    //    string  originCertificateName; // Certifier Name
-
-    mapping(uint32 => Scheme) schemes;
-    mapping(uint32 => Certificate) certificates;
-    mapping(uint32 => Request) requests;
-
+    mapping(uint32 => Scheme) public schemes;
+    mapping(uint32 => Certificate) public certificates;
+    mapping(uint32 => Request) public requests;
 
     // Latest Scheme ID for schemes represented by contract
     uint32  public schemeId;
@@ -149,6 +141,7 @@ contract SupplyChain {
         selfdestruct(owner);
     }
 
+    // Certifier produces a scheme to be used for generating certificates
     function createScheme(string memory _schemeName) public {
         assert(bytes(_schemeName).length != 0);
         schemes[schemeId].schemeState = DEFAULT_STATE;
