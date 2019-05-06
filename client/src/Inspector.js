@@ -5,53 +5,86 @@ import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 
 
-function Recipient(props) {
+function Inspector(props) {
 
     const {drizzle, addAlert} = props;
     const contract = drizzle && drizzle.contracts.SupplyChain;
 
-    const [recipientId, setRecipientId] = useState("");
+    const [inspectorId, setInspectorId] = useState("");
+    const [certificateId, setCertificateId] = useState("1");
     const [requestId, setRequestId] = useState("1");
 
 
     // Set the Address Fields to default addresses
     useEffect(() => {
         const {accounts} = props;
-        if (accounts.length > 0) {
-            setRecipientId(accounts[2]);
+        if (accounts.length > 3) {
+            setInspectorId(accounts[3]);
         }
     }, [props.accounts]);
 
-    // A recipient can approve/deny access to a certificate by an Inspector
-    const decideAccess = (_canAccess) => {
-        return async () => {
-            if (contract) {
-                const decideAccess = contract.methods["decideAccess"];
-                try {
-                    await decideAccess(requestId, _canAccess).send({from: recipientId}).then(
-                        res => addAlert(`✅  Access decided: ${_canAccess} - Tx Hash: ${res.transactionHash}`, 'success'),
-                        err => addAlert(err.message, 'danger')
-                    )
-                } catch (err) {
-                    addAlert(err.message, 'danger')
-                }
+
+    // An inspector has request access to view a Recipient's certification
+    const requestAccess = () => {
+        if (contract) {
+            const requestAccess = contract.methods["requestAccess"];
+            try {
+                requestAccess(certificateId).send({from: inspectorId}).then(
+                    res => {
+                        const {requestId} = res.events.Requested.returnValues;
+                        addAlert(`✅  Request Id ${requestId} : Requested Access to certificate ${certificateId} - Tx Hash: ${res.transactionHash}`, 'success')
+                    },
+                    err => addAlert(err.message, 'danger')
+                )
+            } catch (err) {
+                addAlert(err.message, 'danger')
             }
         }
     };
 
 
+    // An inspector has viewed a certificate that has had access approved
+    const viewCertificate = () => {
+        if (contract) {
+            const viewCertificate = contract.methods["viewCertificate"];
+            try {
+                viewCertificate(certificateId).send({from: inspectorId}).then(
+                    res => addAlert(`✅  Viewed certificate ${certificateId} - Tx Hash: ${res.transactionHash}`, 'success'),
+                    err => addAlert(err.message, 'danger')
+                )
+            } catch (err) {
+                addAlert(err.message, 'danger')
+            }
+        }
+    };
+
     return (
         <>
             <Form.Group>
-                <Form.Label>Recipient Account</Form.Label>
+                <Form.Label>Inspector Account</Form.Label>
                 <FormControl
-                    value={recipientId}
-                    onChange={(i) => setRecipientId(i.target.value)}
+                    value={inspectorId}
+                    onChange={(i) => setInspectorId(i.target.value)}
                 />
             </Form.Group>
 
             <Form.Group>
-                <Form.Label>Decide Access</Form.Label>
+                <Form.Label>Request Access</Form.Label>
+                <InputGroup>
+                    <InputGroup.Prepend><InputGroup.Text>Certificate Id</InputGroup.Text></InputGroup.Prepend>
+                    <FormControl
+                        value={certificateId}
+                        onChange={(i) => setCertificateId(i.target.value)}
+                    />
+                    <InputGroup.Append>
+                        <Button variant="primary" onClick={requestAccess}>Request</Button>
+                    </InputGroup.Append>
+                </InputGroup>
+            </Form.Group>
+
+
+            <Form.Group>
+                <Form.Label>View Certificate</Form.Label>
                 <InputGroup>
                     <InputGroup.Prepend><InputGroup.Text>Request Id</InputGroup.Text></InputGroup.Prepend>
                     <FormControl
@@ -59,14 +92,14 @@ function Recipient(props) {
                         onChange={(i) => setRequestId(i.target.value)}
                     />
                     <InputGroup.Append>
-                        <Button variant="primary" onClick={decideAccess(true)}>Approve</Button>
-                        <Button variant="danger" onClick={decideAccess(false)}>Deny</Button>
+                        <Button variant="primary" onClick={viewCertificate}>View</Button>
                     </InputGroup.Append>
                 </InputGroup>
             </Form.Group>
+
         </>
     );
 
 }
 
-export default Recipient;
+export default Inspector;

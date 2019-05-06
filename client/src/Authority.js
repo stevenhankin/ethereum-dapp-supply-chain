@@ -17,7 +17,7 @@ function Authority(props) {
     // Set the Address Fields to default addresses
     useEffect(() => {
         const {accounts} = props;
-        if (accounts.length > 0) {
+        if (accounts.length > 1) {
             setAuthorityId(accounts[1]);
         }
     }, [props.accounts]);

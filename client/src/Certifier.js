@@ -16,6 +16,8 @@ function Certifier(props) {
 
     const [schemeId, setSchemeId] = useState("1");
 
+    const [certificateId, setCertificateId] = useState("1");
+
 
     // Set the Address Fields to default addresses
     useEffect(() => {
@@ -26,7 +28,7 @@ function Certifier(props) {
         }
     }, [props.accounts]);
 
-
+    // Certifier produces a scheme to be used for generating certificates
     const createScheme = () => {
         if (contract) {
             const createScheme = contract.methods["createScheme"];
@@ -44,6 +46,7 @@ function Certifier(props) {
         }
     };
 
+    // The certifier awards a certificate to a recipient
     const certifyRecipient = async () => {
         if (contract) {
             const awardCertificate = contract.methods["awardCertificate"];
@@ -57,6 +60,22 @@ function Certifier(props) {
             }
         }
     };
+
+    // A certifier has revoked a recipient's certificate (perhaps they cheated during an exam!)
+    const revokeCertificate = async () => {
+        if (contract) {
+            const revokeCertificate = contract.methods["revokeCertificate"];
+            try {
+                await revokeCertificate(certificateId).send({from: certifierId}).then(
+                    addAlert(`✅  Revoked certificate ${certificateId}`, 'success'),
+                    err => addAlert(err.message, 'danger')
+                )
+            } catch (err) {
+                addAlert(err.message, 'danger')
+            }
+        }
+    };
+
 
     return (
         <>
@@ -105,6 +124,24 @@ function Certifier(props) {
                 <Button variant="primary" onClick={certifyRecipient}>
                     Certify Recipient
                 </Button>
+            </Form.Group>
+
+
+            <Form.Group>
+                <Form.Label>Revoke Certificate</Form.Label>
+                <InputGroup>
+                    <InputGroup.Prepend><InputGroup.Text>Certificate Id</InputGroup.Text></InputGroup.Prepend>
+                    <FormControl
+                        value={certificateId}
+                        onChange={(i) => setCertificateId(i.target.value)}
+                    />
+                    <InputGroup.Append>
+                        <Button variant="primary" onClick={revokeCertificate}>
+                            Revoke
+                        </Button>
+                    </InputGroup.Append>
+
+                </InputGroup>
             </Form.Group>
         </>
     );
