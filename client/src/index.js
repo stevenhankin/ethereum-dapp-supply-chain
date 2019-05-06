@@ -12,6 +12,12 @@ const options = {
     contracts: [
         SupplyChain
     ],
+    web3: {
+        fallback: {
+            type: "ws",
+            url: "ws://127.0.0.1:7545",
+        },
+    },
 };
 const drizzleStore = generateStore(options);
 const drizzle = new Drizzle(options, drizzleStore);

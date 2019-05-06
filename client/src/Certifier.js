@@ -7,6 +7,7 @@ function Certifier(props) {
 
     const [certifierId, setCertifierId] = useState("");
     const [schemeName, setSchemeName] = useState("");
+    const [recipientId, setRecipientId] = useState("");
 
     useEffect(() => { console.log('Setting certifier'); setCertifierId(props.accounts[0]) },[props.accounts])
 
@@ -17,8 +18,10 @@ function Certifier(props) {
         if (drizzle && drizzle.contracts.SupplyChain) {
             const contract = drizzle.contracts.SupplyChain;
             const createScheme = contract.methods["createScheme"];
-            console.log({createScheme});
-            createScheme( schemeName).send({from:props.accounts[3]} ).then(console.log);
+            createScheme(schemeName).send({from: props.accounts[3]}).then(
+                result => { console.log('success',{result})},
+                err => { console.log('failed',{err})}
+            );
         }
     };
 
@@ -40,6 +43,12 @@ function Certifier(props) {
             <Button variant="primary" onClick={createScheme}>
                 Create Scheme
             </Button>
+
+            <Form.Label>Recipient ID</Form.Label>
+            <FormControl
+                value={recipientId}
+                onChange={(i) => setRecipientId(i.target.value)}
+            />
 
         </Form.Group>);
 
