@@ -25,17 +25,13 @@ function Inspector(props) {
 
 
     // An inspector has request access to view a Recipient's certification
-    const requestAccess = () => {
+    const requestAccess = async () => {
         if (contract) {
             const requestAccess = contract.methods["requestAccess"];
             try {
-                requestAccess(certificateId).send({from: inspectorId}).then(
-                    res => {
-                        const {requestId} = res.events.Requested.returnValues;
-                        addAlert(`✅  Request Id ${requestId} : Requested Access to certificate ${certificateId} - Tx Hash: ${res.transactionHash}`, 'success')
-                    },
-                    err => addAlert(err.message, 'danger')
-                )
+                const res = await requestAccess(certificateId).send({from: inspectorId});
+                const {requestId} = res.events.Requested.returnValues;
+                addAlert(`✅  Request Id ${requestId} : Requested Access to certificate ${certificateId} - Tx Hash: ${res.transactionHash}`, 'success')
             } catch (err) {
                 addAlert(err.message, 'danger')
             }
@@ -44,14 +40,12 @@ function Inspector(props) {
 
 
     // An inspector has viewed a certificate that has had access approved
-    const viewCertificate = () => {
+    const viewCertificate = async () => {
         if (contract) {
             const viewCertificate = contract.methods["viewCertificate"];
             try {
-                viewCertificate(certificateId).send({from: inspectorId}).then(
-                    res => addAlert(`✅  Viewed certificate ${certificateId} - Tx Hash: ${res.transactionHash}`, 'success'),
-                    err => addAlert(err.message, 'danger')
-                )
+                const res = await viewCertificate(certificateId).send({from: inspectorId});
+                addAlert(`✅  Viewed certificate ${certificateId} - Tx Hash: ${res.transactionHash}`, 'success');
             } catch (err) {
                 addAlert(err.message, 'danger')
             }

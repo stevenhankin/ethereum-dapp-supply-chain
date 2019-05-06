@@ -28,10 +28,20 @@ function Authority(props) {
         if (contract) {
             const endorseScheme = contract.methods["endorseScheme"];
             try {
-                await endorseScheme(schemeId).send({from: authorityId}).then(
-                    addAlert('✅  Endorsed scheme', 'success'),
-                    err => addAlert(err.message, 'danger')
-                )
+                const result = await endorseScheme(schemeId).send({from: authorityId});
+                addAlert(`✅  Endorsed scheme ${schemeId} - Tx Hash : ${result.transactionHash}`, 'success');
+            } catch (err) {
+                addAlert(err.message, 'danger')
+            }
+        }
+    };
+
+    const invalidateScheme = async () => {
+        if (contract) {
+            const invalidateScheme = contract.methods["invalidateScheme"];
+            try {
+                const result = await invalidateScheme(schemeId).send({from: authorityId});
+                addAlert(`✅  Invalidated scheme - Tx Hash : ${result.transactionHash}`, 'success');
             } catch (err) {
                 addAlert(err.message, 'danger')
             }
@@ -60,7 +70,27 @@ function Authority(props) {
                         <Button variant="primary"
                                 onClick={endorseScheme}
                         >
-                            Endorse Scheme
+                            Endorse
+                        </Button>
+                    </InputGroup.Append>
+
+                </InputGroup>
+            </Form.Group>
+
+
+            <Form.Group>
+                <Form.Label>Invalidate Scheme</Form.Label>
+                <InputGroup>
+                    <InputGroup.Prepend><InputGroup.Text>Scheme Id</InputGroup.Text></InputGroup.Prepend>
+                    <FormControl
+                        value={schemeId}
+                        onChange={(i) => setSchemeId(i.target.value)}
+                    />
+                    <InputGroup.Append>
+                        <Button variant="primary"
+                                onClick={invalidateScheme}
+                        >
+                            Invalidate
                         </Button>
                     </InputGroup.Append>
 

@@ -18,7 +18,6 @@ function Certifier(props) {
 
     const [certificateId, setCertificateId] = useState("1");
 
-
     // Set the Address Fields to default addresses
     useEffect(() => {
         const {accounts} = props;
@@ -29,17 +28,13 @@ function Certifier(props) {
     }, [props.accounts]);
 
     // Certifier produces a scheme to be used for generating certificates
-    const createScheme = () => {
+    const createScheme = async () => {
         if (contract) {
             const createScheme = contract.methods["createScheme"];
             try {
-                createScheme(schemeName).send({from: certifierId}).then(
-                    result => {
-                        const {schemeId} = result.events.Created.returnValues;
-                        addAlert(`✅  Created scheme ${schemeId} - Tx Hash : ${result.transactionHash}`, 'success')
-                    },
-                    err => addAlert(err.message, 'danger')
-                );
+                const result = await createScheme(schemeName).send({from: certifierId});
+                const {schemeId} = result.events.Created.returnValues;
+                addAlert(`✅  Created scheme ${schemeId} - Tx Hash : ${result.transactionHash}`, 'success')
             } catch (err) {
                 addAlert(err.message, 'danger')
             }
@@ -51,10 +46,8 @@ function Certifier(props) {
         if (contract) {
             const awardCertificate = contract.methods["awardCertificate"];
             try {
-                await awardCertificate(schemeId, recipientId).send({from: certifierId}).then(
-                    addAlert('✅  Certified recipient', 'success'),
-                    err => addAlert(err.message, 'danger')
-                )
+                const result = await awardCertificate(schemeId, recipientId).send({from: certifierId});
+                addAlert(`✅  Certified recipient - Tx Hash : ${result.transactionHash}`, 'success');
             } catch (err) {
                 addAlert(err.message, 'danger')
             }
@@ -66,10 +59,8 @@ function Certifier(props) {
         if (contract) {
             const revokeCertificate = contract.methods["revokeCertificate"];
             try {
-                await revokeCertificate(certificateId).send({from: certifierId}).then(
-                    addAlert(`✅  Revoked certificate ${certificateId}`, 'success'),
-                    err => addAlert(err.message, 'danger')
-                )
+                const result = await revokeCertificate(certificateId).send({from: certifierId});
+                addAlert(`✅  Revoked certificate ${certificateId} - Tx Hash : ${result.transactionHash}`, 'success')
             } catch (err) {
                 addAlert(err.message, 'danger')
             }

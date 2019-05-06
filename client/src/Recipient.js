@@ -28,10 +28,8 @@ function Recipient(props) {
             if (contract) {
                 const decideAccess = contract.methods["decideAccess"];
                 try {
-                    await decideAccess(requestId, _canAccess).send({from: recipientId}).then(
-                        res => addAlert(`✅  Access decided: ${_canAccess} - Tx Hash: ${res.transactionHash}`, 'success'),
-                        err => addAlert(err.message, 'danger')
-                    )
+                    const res = await decideAccess(requestId, _canAccess).send({from: recipientId});
+                    addAlert(`✅  Access decided: ${_canAccess} - Tx Hash: ${res.transactionHash}`, 'success')
                 } catch (err) {
                     addAlert(err.message, 'danger')
                 }
