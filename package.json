@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/stevenhankin/ethereum-dapp-supply-chain#readme",
   "dependencies": {
+    "scrypt": "^6.0.3",
     "solc": "^0.5.7",
     "truffle-hdwallet-provider": "^1.0.8",
     "web3": "^1.0.0-beta.53"
