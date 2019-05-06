@@ -2,16 +2,20 @@ import React, {useState, useEffect} from 'react';
 import Form from "react-bootstrap/Form";
 import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/Button";
+import InputGroup from "react-bootstrap/InputGroup";
 
 
 function Certifier(props) {
 
-    const {drizzle,addAlert} = props;
+    const {drizzle, addAlert} = props;
     const contract = drizzle && drizzle.contracts.SupplyChain;
 
     const [certifierId, setCertifierId] = useState("");
-    const [schemeName, setSchemeName] = useState("");
+    const [schemeName, setSchemeName] = useState("My example scheme");
     const [recipientId, setRecipientId] = useState("");
+
+    const [schemeId, setSchemeId] = useState("1");
+
 
     // Set the Address Fields to default addresses
     useEffect(() => {
@@ -28,11 +32,14 @@ function Certifier(props) {
             const createScheme = contract.methods["createScheme"];
             try {
                 createScheme(schemeName).send({from: certifierId}).then(
-                    result => addAlert(`✅ Tx Hash : ${result.transactionHash}`,'success'),
-                    err => addAlert(err.message,'danger')
+                    result => {
+                        const {schemeId} = result.events.Created.returnValues;
+                        addAlert(`✅  Created scheme ${schemeId} - Tx Hash : ${result.transactionHash}`, 'success')
+                    },
+                    err => addAlert(err.message, 'danger')
                 );
             } catch (err) {
-                addAlert(err.message,'danger')
+                addAlert(err.message, 'danger')
             }
         }
     };
@@ -41,12 +48,12 @@ function Certifier(props) {
         if (contract) {
             const awardCertificate = contract.methods["awardCertificate"];
             try {
-                await awardCertificate(99999999, recipientId).send({from: certifierId}).then(
-                    result => console.log('success', {result}),
-                    err => alert(err.message)
+                await awardCertificate(schemeId, recipientId).send({from: certifierId}).then(
+                    addAlert('✅  Certified recipient', 'success'),
+                    err => addAlert(err.message, 'danger')
                 )
             } catch (err) {
-                alert(err.message)
+                addAlert(err.message, 'danger')
             }
         }
     };
@@ -54,7 +61,7 @@ function Certifier(props) {
     return (
         <>
             <Form.Group>
-                <Form.Label>Certifier ID</Form.Label>
+                <Form.Label>Certifier Account</Form.Label>
                 <FormControl
                     value={certifierId}
                     onChange={(i) => setCertifierId(i.target.value)}
@@ -62,23 +69,39 @@ function Certifier(props) {
             </Form.Group>
 
             <Form.Group>
-                <Form.Label>Scheme Name</Form.Label>
-                <FormControl
-                    value={schemeName}
-                    onChange={(i) => setSchemeName(i.target.value)}
-                />
+                <Form.Label>Scheme Creation</Form.Label>
+                <InputGroup>
+                    <InputGroup.Prepend><InputGroup.Text>Scheme Name</InputGroup.Text></InputGroup.Prepend>
+                    <FormControl
+                        value={schemeName}
+                        onChange={(i) => setSchemeName(i.target.value)}
+                    />
+                    <InputGroup.Append>
+                        <Button variant="primary" onClick={createScheme}>
+                            Create Scheme
+                        </Button>
+                    </InputGroup.Append>
 
-                <Button variant="primary" onClick={createScheme}>
-                    Create Scheme
-                </Button>
+                </InputGroup>
             </Form.Group>
 
             <Form.Group>
-                <Form.Label>Recipient ID</Form.Label>
-                <FormControl
-                    value={recipientId}
-                    onChange={(i) => setRecipientId(i.target.value)}
-                />
+                <Form.Label>Certify a Recipient</Form.Label>
+                <InputGroup>
+                    <InputGroup.Prepend><InputGroup.Text>Scheme ID</InputGroup.Text></InputGroup.Prepend>
+                    <FormControl
+                        value={schemeId}
+                        onChange={(i) => setSchemeId(i.target.value)}
+                    />
+                </InputGroup>
+
+                <InputGroup>
+                    <InputGroup.Prepend><InputGroup.Text>Recipient ID</InputGroup.Text></InputGroup.Prepend>
+                    <FormControl
+                        value={recipientId}
+                        onChange={(i) => setRecipientId(i.target.value)}
+                    />
+                </InputGroup>
                 <Button variant="primary" onClick={certifyRecipient}>
                     Certify Recipient
                 </Button>

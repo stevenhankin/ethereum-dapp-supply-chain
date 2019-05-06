@@ -6,19 +6,22 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Jumbotron from "react-bootstrap/Jumbotron";
-import Accounts from "./Accounts";
-import Certifier from "./Certifier";
 // import {DrizzleContext} from "drizzle-react";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import Alert from 'react-bootstrap/Alert'
 import md5 from 'md5';
+import Accounts from "./Accounts";
+import Certifier from "./Certifier";
+import Authority from "./Authority";
+import Recipient from "./Recipient";
 
 function Overview(props) {
 
     // EVM accounts
     const [accounts, setAccounts] = useState([]);
 
+    // Tab selection default
     const [key, setKey] = useState('certifier');
 
     // Addresses of Actors
@@ -30,10 +33,9 @@ function Overview(props) {
 
     const {drizzle, drizzleState} = props;
 
+    // When accounts are available, map them as defaults to actors
     useEffect(() => {
-
         if (props && props.drizzle && props.drizzle.web3) {
-            // let _accounts = await
             props.drizzle.web3.eth.getAccounts()
                 .then(_accounts => {
                     setAccounts(_accounts);
@@ -53,7 +55,7 @@ function Overview(props) {
         const id = md5(msg);
         if (!alerts.filter(alert => alert.id === id).length) {
             setAlerts(_alerts => !_alerts.filter(alert => alert.id === id).length && [..._alerts, {id, msg, variant}]);
-            setTimeout(() => removeAlert(id), 3000);
+            setTimeout(() => removeAlert(id), 9000);
         }
     };
 
@@ -68,10 +70,14 @@ function Overview(props) {
                     <Col>
 
                         <Jumbotron>
-                            <h1>Hello, world!</h1>
+                            <h1>World Certifier</h1>
                             <p>
-                                This is a simple hero unit, a simple jumbotron-style component for calling
-                                extra attention to featured content or information.
+                                This DAPP is for a decentralized approach for certifcation schemes, issuance
+                                and verification
+                            </p>
+                            <p>
+                                Any party can become a Certifier and assign a suitable Authority
+                                that can endorse authority of certification
                             </p>
                         </Jumbotron>
                     </Col>
@@ -92,22 +98,12 @@ function Overview(props) {
                                            drizzleState={drizzleState}/>
                             </Tab>
                             <Tab eventKey="authority" title="Authority">
-                                <Form.Group>
-                                    <Form.Label>Authority ID</Form.Label>
-                                    <FormControl
-                                        value={authorityId}
-                                        onChange={(i) => setAuthorityId(i.target.value)}
-                                    />
-                                </Form.Group>
+                                <Authority addAlert={addAlert} accounts={accounts} drizzle={drizzle}
+                                           drizzleState={drizzleState}/>
                             </Tab>
                             <Tab eventKey="recipient" title="Recipient">
-                                <Form.Group>
-                                    <Form.Label>Recipient ID</Form.Label>
-                                    <FormControl
-                                        value={recipientId}
-                                        onChange={(i) => setRecipientId(i.target.value)}
-                                    />
-                                </Form.Group>
+                                <Recipient addAlert={addAlert} accounts={accounts} drizzle={drizzle}
+                                           drizzleState={drizzleState}/>
                             </Tab>
                             <Tab eventKey="inspector" title="Inspector">
                                 <Form.Group>
