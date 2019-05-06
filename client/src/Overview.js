@@ -1,16 +1,18 @@
 import React, {useState, useEffect} from 'react';
 import Form from "react-bootstrap/Form";
 import FormControl from "react-bootstrap/FormControl";
-import Button from "react-bootstrap/Button";
+// import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Table from "react-bootstrap/Table";
+import Jumbotron from "react-bootstrap/Jumbotron";
+import Accounts from "./Accounts";
 import Certifier from "./Certifier";
-import {DrizzleContext} from "drizzle-react";
+// import {DrizzleContext} from "drizzle-react";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
-
+import Alert from 'react-bootstrap/Alert'
+import md5 from 'md5';
 
 function Overview(props) {
 
@@ -24,13 +26,13 @@ function Overview(props) {
     const [recipientId, setRecipientId] = useState("");
     const [inspectorId, setInspectorId] = useState("");
 
+    const [alerts, setAlerts] = useState([]);
 
     const {drizzle, drizzleState} = props;
 
     useEffect(() => {
-        console.log('HERE!!!!!!!!!!', {props})
 
-        if (props && props.drizzle) {
+        if (props && props.drizzle && props.drizzle.web3) {
             // let _accounts = await
             props.drizzle.web3.eth.getAccounts()
                 .then(_accounts => {
@@ -39,47 +41,55 @@ function Overview(props) {
                     setAuthorityId(_accounts[1]);
                     setRecipientId(_accounts[2]);
                     setInspectorId(_accounts[3]);
-
                 });
         }
     }, [props.drizzle]);
 
+    const removeAlert = (id) => {
+        setAlerts(_alerts => _alerts.filter(alert => alert.id !== id));
+    };
 
-    console.log({props});
+    const addAlert = (msg, variant) => {
+        const id = md5(msg);
+        if (!alerts.filter(alert => alert.id === id).length) {
+            setAlerts(_alerts => !_alerts.filter(alert => alert.id === id).length && [..._alerts, {id, msg, variant}]);
+            setTimeout(() => removeAlert(id), 3000);
+        }
+    };
+
 
     return (
         <React.Fragment>
+
 
             <Container>
 
                 <Row>
                     <Col>
-                        <Table striped bordered hover>
-                            <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Address</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {accounts.map((a, idx) =>
-                                <tr key={a}>
-                                    <td>{idx}</td>
-                                    <td>{a}</td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </Table>
+
+                        <Jumbotron>
+                            <h1>Hello, world!</h1>
+                            <p>
+                                This is a simple hero unit, a simple jumbotron-style component for calling
+                                extra attention to featured content or information.
+                            </p>
+                        </Jumbotron>
                     </Col>
                 </Row>
 
+
                 <Row>
                     <Col>
-
+                        <hr/>
 
                         <Tabs activeKey={key} onSelect={key => setKey(key)}>
+                            <Tab eventKey="accounts" title="Accounts">
+                                <Accounts addAlert={addAlert} accounts={accounts} drizzle={drizzle}
+                                          drizzleState={drizzleState}/>
+                            </Tab>
                             <Tab eventKey="certifier" title="Certifier">
-                                <Certifier accounts={accounts} drizzle={drizzle} drizzleState={drizzleState}/>
+                                <Certifier addAlert={addAlert} accounts={accounts} drizzle={drizzle}
+                                           drizzleState={drizzleState}/>
                             </Tab>
                             <Tab eventKey="authority" title="Authority">
                                 <Form.Group>
@@ -110,6 +120,24 @@ function Overview(props) {
                             </Tab>
                         </Tabs>
 
+                    </Col>
+                </Row>
+
+                <Row>
+                    <Col>
+                        <hr/>
+                        <h3>Transaction History</h3>
+                        {
+                            alerts.length === 0 ? <div>No recent updates</div>
+                                :
+                                alerts.reverse().map(alert =>
+                                    <Alert key={alert.id} variant={alert.variant}>
+                                        {typeof alert.msg == 'object' ? JSON.stringify(alert.msg)
+                                            : alert.msg
+                                        }
+                                    </Alert>
+                                )
+                        }
                     </Col>
                 </Row>
 

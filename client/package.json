@@ -7,10 +7,12 @@
     "drizzle": "^1.4.0",
     "drizzle-react": "^1.2.0",
     "jquery": "^3.4.1",
+    "md5": "^2.2.1",
     "react": "^16.8.6",
     "react-bootstrap": "^1.0.0-beta.8",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.0",
+    "react-toasts": "^3.0.3",
     "react-web3-provider": "^1.1.2",
     "truffle-contract": "^4.0.14",
     "web3": "^1.0.0-beta.54"
