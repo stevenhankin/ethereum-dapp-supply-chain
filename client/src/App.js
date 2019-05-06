@@ -9,11 +9,20 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import FormControl from "react-bootstrap/FormControl";
 import Form from "react-bootstrap/Form";
-import contract from "truffle-contract";
+import TruffleContract from "truffle-contract";
+// import { drizzleConnect } from 'drizzle-react'
+import { DrizzleContext } from "drizzle-react";
+import Certifier from "./Certifier";
 
-const SupplyChainJSON = require('./contracts/SupplyChain.json');
+// const SupplyChainJSON = require('./contracts/SupplyChain.json');
+import SupplyChain from './contracts/SupplyChain.json';
 
-function App() {
+
+
+function App(props, context) {
+
+    console.log('******* PROPS',{props});
+    console.log('******* CONTEXT',{context});
 
     let web3Provider = {};
     let web3 = {};
@@ -24,15 +33,13 @@ function App() {
     // const [web3Provider, setWeb3Provider] = useState({});
 
     // Addresses of Actors
-    const [certifierId, setCertifierId] = useState("");
     const [authorityId, setAuthorityId] = useState("");
     const [recipientId, setRecipientId] = useState("");
     const [inspectorId, setInspectorId] = useState("");
 
-    const [schemeName, setSchemeName] = useState("");
 
-    console.log({contract});
-    console.log({certifierId});
+    // console.log({contract});
+    // console.log({certifierId});
 
     // Use supplied provider or fallback to Ganache
     const initWeb3 = async () => {
@@ -62,129 +69,131 @@ function App() {
 
         setAccounts(_accounts);
         // Use first four addresses for the Actors
-        setCertifierId(_accounts[0]);
         setAuthorityId(_accounts[1]);
         setRecipientId(_accounts[2]);
         setInspectorId(_accounts[3]);
         console.log('initWeb3 done');
+
+
+        let _contract = TruffleContract(SupplyChain);
+        _contract.setProvider(web3Provider);
+
     };
 
 
-    const initContract = () => {
-        let _contract = contract(SupplyChainJSON);
+    const initContract = async () => {
+        console.log('initContract')
+        let _contract = TruffleContract(SupplyChain);
         console.log(web3Provider);
         _contract.setProvider(web3Provider);
-        console.log({_contract});
+        // console.log({_contract});
+        // const deployed = await SupplyChain.deployed();
+        // console.log({deployed})
         _contract.deployed().then((instance) => {
             console.log({instance})
-        });
+        }, (err) => {console.log(err)});
     };
 
 
     // On startup, setup Web3 and contracts
     useEffect(() => {
-            (async () => initWeb3())()
-                .then(
-                    () => {
-                        console.log('async finished!');
-                        initContract();
-                    }
-                )
+            (async () =>
+            {
+                initWeb3();
+                // setTimeout(()=>initContract(),2000)
+                // initContract();
+            })()
         }
         , []
     );
 
 
-    const createScheme = () => {
-        // web3
-    };
 
-    function moo() {
-        console.log('MOOOO')
-    }
 
     return (
-        <React.Fragment>
-            <Container>
+        <DrizzleContext.Consumer>
+            {
+                ({ drizzle, drizzleState, initialized }) =>
 
-                <Row>
-                    <Col>
-                        <Table striped bordered hover>
-                            <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Address</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {accounts.map((a, idx) =>
-                                <tr key={a}>
-                                    <td>{idx}</td>
-                                    <td>{a}</td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </Table>
-                    </Col>
-                </Row>
+                    <React.Fragment>
+                        <Container>
 
-                <Row>
-                    <Col>
-                        <Form>
+                            {/*{console.log({drizzleContext})}*/}
+                            {/*{*/}
+                            {/*    drizzleContext.drizzle.contracts.SupplyChain.deployed()*/}
+                            {/*        .then(console.log)*/}
+                            {/*}*/}
 
-                            <Form.Group>
-                                <Form.Label>Certifier ID</Form.Label>
-                                <FormControl
-                                    value={certifierId}
-                                    // onChange={(i) => setCertifierId(i.target.value)}
-                                    onChange={(i) => moo()}
-                                />
+                            <Row>
+                                <Col>
+                                    <Table striped bordered hover>
+                                        <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Address</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {accounts.map((a, idx) =>
+                                            <tr key={a}>
+                                                <td>{idx}</td>
+                                                <td>{a}</td>
+                                            </tr>
+                                        )}
+                                        </tbody>
+                                    </Table>
+                                </Col>
+                            </Row>
 
-                                <Form.Label>Scheme Name</Form.Label>
-                                <FormControl
-                                    value={schemeName}
-                                    onChange={(i) => setSchemeName(i.target.value)}
-                                />
+                            <Row>
+                                <Col>
+                                    <Form>
 
-                                <Button variant="primary" onClick={createScheme}>
-                                    Create Scheme
-                                </Button>
+                                        <Certifier accounts={accounts} drizzle={drizzle} drizzleState={drizzleState} />
 
-                            </Form.Group>
+                                        <Form.Group>
+                                            <Form.Label>Authority ID</Form.Label>
+                                            <FormControl
+                                                value={authorityId}
+                                                onChange={(i) => setAuthorityId(i.target.value)}
+                                            />
+                                        </Form.Group>
 
-                            <Form.Group>
-                                <Form.Label>Authority ID</Form.Label>
-                                <FormControl
-                                    value={authorityId}
-                                    onChange={(i) => setAuthorityId(i.target.value)}
-                                />
-                            </Form.Group>
+                                        <Form.Group>
+                                            <Form.Label>Recipient ID</Form.Label>
+                                            <FormControl
+                                                value={recipientId}
+                                                onChange={(i) => setRecipientId(i.target.value)}
+                                            />
+                                        </Form.Group>
 
-                            <Form.Group>
-                                <Form.Label>Recipient ID</Form.Label>
-                                <FormControl
-                                    value={recipientId}
-                                    onChange={(i) => setRecipientId(i.target.value)}
-                                />
-                            </Form.Group>
+                                        <Form.Group>
+                                            <Form.Label>Inspector ID</Form.Label>
+                                            <FormControl
+                                                value={inspectorId}
+                                                onChange={(i) => setInspectorId(i.target.value)}
+                                            />
+                                        </Form.Group>
 
-                            <Form.Group>
-                                <Form.Label>Inspector ID</Form.Label>
-                                <FormControl
-                                    value={inspectorId}
-                                    onChange={(i) => setInspectorId(i.target.value)}
-                                />
-                            </Form.Group>
+                                    </Form>
+                                </Col>
+                            </Row>
 
-                        </Form>
-                    </Col>
-                </Row>
+                        </Container>
 
-            </Container>
-
-        </React.Fragment>
+                    </React.Fragment>
+            }
+        </DrizzleContext.Consumer>
     );
 }
 
+// const mapStateToProps = state => {
+//     return {
+//         drizzleStatus: state.drizzleStatus,
+//         SupplyChain: state.contracts.SupplyChain
+//     }
+// };
+//
+// export default drizzleConnect(App, mapStateToProps);
 
 export default App;

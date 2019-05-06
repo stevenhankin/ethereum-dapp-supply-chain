@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "bootstrap": "^4.3.1",
+    "drizzle": "^1.4.0",
+    "drizzle-react": "^1.2.0",
     "jquery": "^3.4.1",
     "react": "^16.8.6",
     "react-bootstrap": "^1.0.0-beta.8",
