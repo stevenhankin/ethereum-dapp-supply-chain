@@ -1,14 +1,8 @@
-import React, {useState, useEffect} from 'react';
-import Form from "react-bootstrap/Form";
-import FormControl from "react-bootstrap/FormControl";
-import Button from "react-bootstrap/Button";
+import React from 'react';
 import Table from "react-bootstrap/Table";
 
 
 function Accounts(props) {
-
-    const {drizzle,addAlert} = props;
-    const contract = drizzle && drizzle.contracts.SupplyChain;
 
     const {accounts} = props;
 

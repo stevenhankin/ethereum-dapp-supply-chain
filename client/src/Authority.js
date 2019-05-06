@@ -41,7 +41,7 @@ function Authority(props) {
             const invalidateScheme = contract.methods["invalidateScheme"];
             try {
                 const result = await invalidateScheme(schemeId).send({from: authorityId});
-                addAlert(`✅  Invalidated scheme - Tx Hash : ${result.transactionHash}`, 'success');
+                addAlert(`✅  Invalidated scheme ${schemeId} - Tx Hash : ${result.transactionHash}`, 'success');
             } catch (err) {
                 addAlert(err.message, 'danger')
             }

@@ -1,4 +1,4 @@
-pragma solidity 0.5.7;
+pragma solidity 0.5.8;
 
 
 /** SupplyChain Contract declaration inheritance the ERC721 openzeppelin implementation */
@@ -43,6 +43,7 @@ contract SupplyChain {
 
     struct Scheme {
         string schemeName;
+        address authorityId;            // Set once endorsed
         SchemeState schemeState;
     }
 
@@ -80,7 +81,14 @@ contract SupplyChain {
     // Only the Inspector can view the certificate
     modifier onlyRequestor(uint32 _requestId) {
         require(msg.sender == requests[_requestId].inspectorId,
-                    "Only the address that requested access can view the certificate");
+            "Only the address that requested access can view the certificate");
+        _;
+    }
+
+    // Only the Authority can invalidate a scheme
+    modifier onlyAuthority(uint32 _schemeId) {
+        require(msg.sender == schemes[_schemeId].authorityId,
+            "Only the authority that endorsed the scheme can invalidate it");
         _;
     }
 
@@ -105,7 +113,7 @@ contract SupplyChain {
 
     // Modifier to assert certificate state
     modifier certified(uint32 _certificateId) {
-        require(certificates[_certificateId].certificateState == CertificateState.Certified, "Scheme is not Certified");
+        require(certificates[_certificateId].certificateState == CertificateState.Certified, "Recipient is not Certified");
         _;
     }
 
@@ -117,13 +125,13 @@ contract SupplyChain {
 
     // Modifier to assert request state
     modifier requested(uint32 _requestId) {
-        require(requests[_requestId].requestState == RequestState.Requested);
+        require(requests[_requestId].requestState == RequestState.Requested, "Access has not been requested");
         _;
     }
 
     // Modifier to assert request state
     modifier approved(uint32 _requestId) {
-        require(requests[_requestId].requestState == RequestState.Approved);
+        require(requests[_requestId].requestState == RequestState.Approved, "Access has not been approved");
         _;
     }
 
@@ -146,6 +154,7 @@ contract SupplyChain {
         assert(bytes(_schemeName).length != 0);
         schemes[schemeId].schemeState = DEFAULT_STATE;
         schemes[schemeId].schemeName = _schemeName;
+        schemes[schemeId].authorityId = msg.sender;
         emit Created(schemeId);
         schemeId++;
     }
@@ -154,6 +163,7 @@ contract SupplyChain {
     function endorseScheme(uint32 _schemeId) public created(_schemeId) {
         assert(_schemeId != 0);
         schemes[_schemeId].schemeState = SchemeState.Endorsed;
+        schemes[_schemeId].authorityId = msg.sender;
         emit Endorsed(_schemeId);
     }
 
@@ -201,7 +211,7 @@ contract SupplyChain {
     }
 
     // Scheme is invalidated to end the scheme
-    function invalidateScheme(uint32 _schemeId) public onlyOwner() {
+    function invalidateScheme(uint32 _schemeId) public onlyAuthority(_schemeId) endorsed(_schemeId) {
         schemes[_schemeId].schemeState = SchemeState.Invalidated;
         emit Invalidated(_schemeId);
     }

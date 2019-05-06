@@ -44,8 +44,8 @@ function Inspector(props) {
         if (contract) {
             const viewCertificate = contract.methods["viewCertificate"];
             try {
-                const res = await viewCertificate(certificateId).send({from: inspectorId});
-                addAlert(`✅  Viewed certificate ${certificateId} - Tx Hash: ${res.transactionHash}`, 'success');
+                const res = await viewCertificate(requestId).send({from: inspectorId});
+                addAlert(`✅  Viewed certificate for request ${requestId} - Tx Hash: ${res.transactionHash}`, 'success');
             } catch (err) {
                 addAlert(err.message, 'danger')
             }

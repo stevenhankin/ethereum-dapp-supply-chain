@@ -33,6 +33,7 @@ function Certifier(props) {
             const createScheme = contract.methods["createScheme"];
             try {
                 const result = await createScheme(schemeName).send({from: certifierId});
+                console.log({result})
                 const {schemeId} = result.events.Created.returnValues;
                 addAlert(`✅  Created scheme ${schemeId} - Tx Hash : ${result.transactionHash}`, 'success')
             } catch (err) {
