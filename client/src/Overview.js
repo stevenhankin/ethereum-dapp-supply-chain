@@ -25,15 +25,17 @@ function Overview(props) {
 
     const {drizzle, drizzleState} = props;
 
+
     // When accounts are available, map them as defaults to actors
     useEffect(() => {
-        if (props && props.drizzle && props.drizzle.web3) {
+        console.log({props})
+        if (props && props.drizzle && props.drizzle.web3 && props.drizzle.web3.eth) {
             props.drizzle.web3.eth.getAccounts()
                 .then(_accounts => {
                     setAccounts(_accounts);
                 });
         }
-    }, [props.drizzle]);
+    }, [props]);
 
 
     // Handle alerts

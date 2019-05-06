@@ -20,7 +20,7 @@ function Authority(props) {
         if (accounts.length > 1) {
             setAuthorityId(accounts[1]);
         }
-    }, [props.accounts]);
+    }, [props]);
 
 
     // An authority can officially endorse the certification scheme as approved

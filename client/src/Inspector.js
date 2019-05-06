@@ -21,7 +21,7 @@ function Inspector(props) {
         if (accounts.length > 3) {
             setInspectorId(accounts[3]);
         }
-    }, [props.accounts]);
+    }, [props]);
 
 
     // An inspector has request access to view a Recipient's certification

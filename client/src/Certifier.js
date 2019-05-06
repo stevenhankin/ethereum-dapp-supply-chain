@@ -25,7 +25,7 @@ function Certifier(props) {
             setCertifierId(accounts[0]);
             setRecipientId(accounts[2]);
         }
-    }, [props.accounts]);
+    }, [props]);
 
     // Certifier produces a scheme to be used for generating certificates
     const createScheme = async () => {

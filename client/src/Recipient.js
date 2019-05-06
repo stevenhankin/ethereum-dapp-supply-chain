@@ -13,14 +13,14 @@ function Recipient(props) {
     const [recipientId, setRecipientId] = useState("");
     const [requestId, setRequestId] = useState("1");
 
+    const {accounts} = props;
 
     // Set the Address Fields to default addresses
     useEffect(() => {
-        const {accounts} = props;
         if (accounts.length > 2) {
             setRecipientId(accounts[2]);
         }
-    }, [props.accounts]);
+    }, [accounts]);
 
     // A recipient can approve/deny access to a certificate by an Inspector
     const decideAccess = (_canAccess) => {
