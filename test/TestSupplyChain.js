@@ -1,7 +1,3 @@
-// const { getWeb3, getContractInstance } = require("./helpers")
-// const web3 = getWeb3()
-// const getInstance = getContractInstance(web3)
-
 const truffleAssert = require('truffle-assertions');
 
 // This script is designed to test the solidity smart contract - SuppyChain.sol -- and the various functions within
@@ -18,7 +14,6 @@ contract('SupplyChain', async (accs) => {
     recipient = accounts[1];
     inspector = accounts[2];
 });
-
 
 it('cannot create a Scheme with no name', async () => {
     let instance;
@@ -39,7 +34,6 @@ it('can create a Scheme and emit correct event', async () => {
         return schemeId > 0
     })
 });
-
 
 it('can endorse a Scheme and emit correct event', async () => {
     const instance = await SupplyChain.deployed();
