@@ -1,10 +1,10 @@
 pragma solidity 0.5.8;
 
-// Import the library 'Roles'
 import "./Roles.sol";
+import "./InspectorRole.sol";
 
 
-contract RecipientRole {
+contract RecipientRole is InspectorRole {
     using Roles for Roles.Role;
 
     // Define 2 events, one for Adding, and other for Removing
@@ -50,5 +50,17 @@ contract RecipientRole {
     function _removeRecipient(address account) internal {
         recipients.remove(account);
         emit RecipientRemoved(account);
+    }
+
+    // A recipient decides whether or not to approve access to their certificate
+    // from a data protection perspective
+    function decideAccess(uint32 _requestId, bool _canAccess) public {
+        if (_canAccess) {
+            requests[_requestId].requestState = RequestState.Approved;
+            emit Approved(_requestId);
+        } else {
+            requests[_requestId].requestState = RequestState.Denied;
+            emit Denied(_requestId);
+        }
     }
 }

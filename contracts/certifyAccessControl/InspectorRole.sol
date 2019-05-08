@@ -2,6 +2,7 @@ pragma solidity 0.5.8;
 
 import "./Roles.sol";
 
+
 contract InspectorRole {
     using Roles for Roles.Role;
 
