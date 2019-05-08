@@ -69,8 +69,7 @@ A Certifier would probably have a single Authority per Certificate.  Many certif
 7) Application should now be available on http://localhost:3000
 
 # Testing
-Start ```truffle develop``` then run the following:
 ```
-migrate --reset
-test
+truffle compile
+truffle test
 ```
