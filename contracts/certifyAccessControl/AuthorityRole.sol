@@ -47,11 +47,6 @@ contract AuthorityRole {
         return authorities.has(account);
     }
 
-    // Scheme is invalidated to end the scheme
-    function invalidateScheme(uint32 _schemeId) public onlyAuthority(_schemeId) endorsed(_schemeId) {
-        schemes[_schemeId].schemeState = SchemeState.Invalidated;
-        emit Invalidated(_schemeId);
-    }
 
     // Modifier to assert scheme state
     modifier created(uint32 _schemeId) {
@@ -76,11 +71,18 @@ contract AuthorityRole {
     }
 
     // An authority officially endorsed the certification scheme as approved
-    function endorseScheme(uint32 _schemeId) public created(_schemeId) onlyAuthority(_schemeId) {
+    function endorseScheme(uint32 _schemeId) public created(_schemeId) {
         assert(_schemeId != 0);
         schemes[_schemeId].schemeState = SchemeState.Endorsed;
         schemes[_schemeId].authorityId = msg.sender;
         emit Endorsed(_schemeId);
     }
+
+    // Scheme is invalidated to end the scheme
+    function invalidateScheme(uint32 _schemeId) public onlyAuthority(_schemeId) endorsed(_schemeId) {
+        schemes[_schemeId].schemeState = SchemeState.Invalidated;
+        emit Invalidated(_schemeId);
+    }
+
 
 }

@@ -48,7 +48,7 @@ function Certifier(props) {
             const awardCertificate = contract.methods["awardCertificate"];
             try {
                 const result = await awardCertificate(schemeId, recipientId).send({from: certifierId});
-                addAlert(`✅  Certified recipient - Tx Hash : ${result.transactionHash}`, 'success');
+                addAlert(`✅  Certified recipient with certificate ${certificateId} - Tx Hash : ${result.transactionHash}`, 'success');
             } catch (err) {
                 addAlert(err.message, 'danger')
             }
