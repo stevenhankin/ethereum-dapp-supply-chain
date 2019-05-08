@@ -24,11 +24,11 @@ They are also checked in under Documentation directory
 
 ### Deployed to RINKEBY
 
-https://rinkeby.etherscan.io/tx/0xbb287e39fee211a78eba625a041dbae782a10b8aa20f84c3f1c08bc0fc45d0f7
+https://rinkeby.etherscan.io/tx/https://rinkeby.etherscan.io/tx/0xc36f12497b0d7b51f4351303b17b166c83ec71243dbe56e8d8189d83e9f00381
 
 | Transaction ID | Contract address |
 |----------------|------------------|
-| 0xbb287e39fee211a78eba625a041dbae782a10b8aa20f84c3f1c08bc0fc45d0f7 | 0xFA94e24cefe6E58aB6deA165F1D3f104227dC5df |
+| 0xc36f12497b0d7b51f4351303b17b166c83ec71243dbe56e8d8189d83e9f00381 | 0xC4c62eE5bcb488ec2069Ee465f77D7B110328622 |
 
 
 ### Example Use Cases
