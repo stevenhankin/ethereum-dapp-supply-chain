@@ -1,27 +1,40 @@
 pragma solidity 0.5.8;
 
-// Import the library 'Roles'
 import "./Roles.sol";
 
 
 contract AuthorityRole {
     using Roles for Roles.Role;
 
-    // Define 2 events, one for Adding, and other for Removing
-    event AuthorityAdded(address indexed account);
-    event AuthorityRemoved(address indexed account);
+    mapping(uint32 => Scheme) public schemes;
+
+    // States as documented in UML State Diagram documentation
+    enum SchemeState {
+        Created, // 0
+        Endorsed, // 1
+        Invalidated // 2
+    }
+
+    // Events for Schemes
+    event Created(uint32 schemeId);
+    event Endorsed(uint32 schemeId);
+    event Invalidated (uint32 schemeId);
+
+    struct Scheme {
+        string schemeName;
+        address authorityId;            // Set once endorsed
+        SchemeState schemeState;
+    }
 
     // Inheriting  struct Role from 'Roles' library,
     Roles.Role private authorities;
 
-    // In the constructor make the address that deploys this contract the 1st authority
-    constructor() public {
-        _addAuthority(msg.sender);
-    }
+    constructor() public {}
 
-    // Define a modifier that checks to see if msg.sender has the appropriate role
-    modifier onlyAuthority() {
-        require(isAuthority(msg.sender));
+    // Only the Authority can invalidate a scheme
+    modifier onlyAuthority(uint32 _schemeId) {
+        require(msg.sender == schemes[_schemeId].authorityId,
+            "Only the authority that endorsed the scheme can invalidate it");
         _;
     }
 
@@ -30,25 +43,15 @@ contract AuthorityRole {
         return authorities.has(account);
     }
 
-    // Define a function 'addAuthority' that adds this role
-    function addAuthority(address account) public onlyAuthority {
-        _addAuthority(account);
+    // Scheme is invalidated to end the scheme
+    function invalidateScheme(uint32 _schemeId) public onlyAuthority(_schemeId) endorsed(_schemeId) {
+        schemes[_schemeId].schemeState = SchemeState.Invalidated;
+        emit Invalidated(_schemeId);
     }
 
-    // Define a function 'renounceAuthority' to renounce this role
-    function renounceAuthority() public {
-        _removeAuthority(msg.sender);
-    }
-
-    // Define an internal function '_addAuthority' to add this role, called by 'addAuthority'
-    function _addAuthority(address account) internal {
-        authorities.add(account);
-        emit AuthorityAdded(account);
-    }
-
-    // Define an internal function '_removeAuthority' to remove this role, called by 'renounceAuthority'
-    function _removeAuthority(address account) internal {
-        authorities.remove(account);
-        emit AuthorityRemoved(account);
+    // Modifier to assert scheme state
+    modifier endorsed(uint32 _schemeId) {
+        require(schemes[_schemeId].schemeState == SchemeState.Endorsed, "Scheme is not Endorsed");
+        _;
     }
 }

@@ -1,13 +1,14 @@
 pragma solidity 0.5.8;
 
+import "../certifyCore/Ownable.sol";
+import "../certifyAccessControl/AuthorityRole.sol";
+import "../certifyAccessControl/CertifierRole.sol";
+import "../certifyAccessControl/InspectorRole.sol";
+import "../certifyAccessControl/RecipientRole.sol";
 
-/** SupplyChain Contract declaration inheritance the ERC721 openzeppelin implementation */
-contract SupplyChain {
 
-    // Certifier that created the scheme will be initial owner
-    address payable public owner;
+contract SupplyChain is Ownable, AuthorityRole, CertifierRole, InspectorRole, RecipientRole {
 
-    mapping(uint32 => Scheme) public schemes;
     mapping(uint32 => Certificate) public certificates;
     mapping(uint32 => Request) public requests;
 
@@ -20,13 +21,6 @@ contract SupplyChain {
     // Latest Request ID for requests represented by contract
     uint32  public requestId;
 
-    // States as documented in UML State Diagram documentation
-    enum SchemeState {
-        Created, // 0
-        Endorsed, // 1
-        Invalidated // 2
-    }
-
     enum CertificateState {
         Certified, // 0
         Revoked    // 1
@@ -37,14 +31,6 @@ contract SupplyChain {
         Approved, // 1
         Denied, // 2
         Viewed      // 3
-    }
-
-    SchemeState private constant DEFAULT_STATE = SchemeState.Created;
-
-    struct Scheme {
-        string schemeName;
-        address authorityId;            // Set once endorsed
-        SchemeState schemeState;
     }
 
     struct Certificate {
@@ -59,10 +45,6 @@ contract SupplyChain {
         uint32 certificateId;       // Certificate that this Request is referencing
     }
 
-    // Events for Schemes
-    event Created(uint32 schemeId);
-    event Endorsed(uint32 schemeId);
-    event Invalidated (uint32 schemeId);
     // Events for Certificates
     event Certified(uint32 certificateId, address recipientId);
     event Revoked(uint32 certificateId);
@@ -72,23 +54,10 @@ contract SupplyChain {
     event Denied(uint32 requestId);
     event Viewed(uint32 requestId);
 
-    // Define a modifier that checks to see if msg.sender == owner of the contract
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
-    }
-
     // Only the Inspector can view the certificate
     modifier onlyRequestor(uint32 _requestId) {
         require(msg.sender == requests[_requestId].inspectorId,
             "Only the address that requested access can view the certificate");
-        _;
-    }
-
-    // Only the Authority can invalidate a scheme
-    modifier onlyAuthority(uint32 _schemeId) {
-        require(msg.sender == schemes[_schemeId].authorityId,
-            "Only the authority that endorsed the scheme can invalidate it");
         _;
     }
 
@@ -103,13 +72,6 @@ contract SupplyChain {
         require(schemes[_schemeId].schemeState == SchemeState.Created, "Scheme has not been Created");
         _;
     }
-
-    // Modifier to assert scheme state
-    modifier endorsed(uint32 _schemeId) {
-        require(schemes[_schemeId].schemeState == SchemeState.Endorsed, "Scheme is not Endorsed");
-        _;
-    }
-
 
     // Modifier to assert certificate state
     modifier certified(uint32 _certificateId) {
@@ -137,22 +99,16 @@ contract SupplyChain {
 
     // In the constructor set 'owner' to the address that instantiated the contract (i.e. the certifier)
     constructor() public payable {
-        owner = msg.sender;
         // Start all IDs from 1 when contract is created
         schemeId = 1;
         certificateId = 1;
         requestId = 1;
     }
 
-    // Certifier can destroy the contract
-    function close() public onlyOwner {
-        selfdestruct(owner);
-    }
-
     // Certifier produces a scheme to be used for generating certificates
     function createScheme(string memory _schemeName) public {
         assert(bytes(_schemeName).length != 0);
-        schemes[schemeId].schemeState = DEFAULT_STATE;
+        schemes[schemeId].schemeState = SchemeState.Created;
         schemes[schemeId].schemeName = _schemeName;
         schemes[schemeId].authorityId = msg.sender;
         emit Created(schemeId);
@@ -208,12 +164,6 @@ contract SupplyChain {
     function revokeCertificate(uint32 _certificateId) public onlyOwner() {
         certificates[_certificateId].certificateState = CertificateState.Revoked;
         emit Revoked(_certificateId);
-    }
-
-    // Scheme is invalidated to end the scheme
-    function invalidateScheme(uint32 _schemeId) public onlyAuthority(_schemeId) endorsed(_schemeId) {
-        schemes[_schemeId].schemeState = SchemeState.Invalidated;
-        emit Invalidated(_schemeId);
     }
 
 }

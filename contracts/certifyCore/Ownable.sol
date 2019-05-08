@@ -2,7 +2,7 @@ pragma solidity 0.5.8;
 
 
 contract Ownable {
-    address private origOwner;
+    address payable private origOwner;
 
     // Define an Event
     event TransferOwnership(address indexed oldOwner, address indexed newOwner);
@@ -24,6 +24,11 @@ contract Ownable {
         _;
     }
 
+    // Owner can destroy the contract
+    function close() public onlyOwner {
+        selfdestruct(origOwner);
+    }
+
     /// Check if the calling address is the owner of the contract
     function isOwner() public view returns (bool) {
         return msg.sender == origOwner;
@@ -36,12 +41,12 @@ contract Ownable {
     }
 
     /// Define a public function to transfer ownership
-    function transferOwnership(address newOwner) public onlyOwner {
+    function transferOwnership(address payable newOwner) public onlyOwner {
         _transferOwnership(newOwner);
     }
 
     /// Define an internal function to transfer ownership
-    function _transferOwnership(address newOwner) internal {
+    function _transferOwnership(address payable newOwner) internal {
         require(newOwner != address(0));
         emit TransferOwnership(origOwner, newOwner);
         origOwner = newOwner;
